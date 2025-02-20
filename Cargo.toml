@@ -1,0 +1,48 @@
+[package]
+authors = ["Tony Albert Lima <80111558+TonyALima@users.noreply.github.com>"]
+name = "friendly-rust-watch"
+readme = "README.md"
+version = "0.1.0"
+edition = "2021"
+
+[profile.dev]
+opt-level = 3
+debug = false
+strip = "none"
+debug-assertions = true
+overflow-checks = false
+lto = false
+panic = 'unwind'
+incremental = false
+codegen-units = 16
+rpath = false
+
+[dependencies]
+aht10 = "0.0.1"
+bitflags = "2.8.0"
+cortex-m = "0.7.7"
+cortex-m-rt = "0.7.5"
+cortex-m-semihosting = "0.5.0"
+embedded-graphics = "0.8.1"
+embedded-hal = "1.0.0"
+heapless = "0.8.0"
+nb = "1.1.0"
+panic-halt = "1.0.0"
+shared-bus = "0.3.1"
+ssd1306 = "0.8.0"
+stm32f1xx-hal = { version = "0.10.0", features = ["rt", "stm32f103"] }
+
+[[bin]]
+name = "friendly-rust-watch"
+path = "src/main.rs"
+test = false
+doctest = false
+bench = false
+
+[dev-dependencies]
+embedded-test = { version = "0.6.0" }
+
+[[test]]
+name = "test_devices"
+harness = false
+
