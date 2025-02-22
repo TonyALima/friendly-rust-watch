@@ -1,7 +1,6 @@
 #![no_std]
 #![no_main]
 
-#[cfg(test)]
 #[embedded_test::tests]
 mod tests {
     use stm32f1xx_hal::{
