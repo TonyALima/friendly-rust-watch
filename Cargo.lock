@@ -4,12 +4,10 @@ version = 4
 
 [[package]]
 name = "aht10"
-version = "0.0.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "9427504991c20197fb6a849009a99b36906a896eb0abfdcd12c5f030a82def34"
+version = "0.1.0"
 dependencies = [
- "bitflags 1.3.2",
- "embedded-hal 0.2.7",
+ "bitflags 2.8.0",
+ "embedded-hal",
 ]
 
 [[package]]
@@ -73,7 +71,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "40ac3d0c0a542d0ab5521211f873f62706a7136df415676f676d347e5a41dd80"
 dependencies = [
  "bitflags 1.3.2",
- "embedded-hal 0.2.7",
+ "embedded-hal",
  "nb 1.1.0",
  "vcell",
 ]
@@ -98,7 +96,7 @@ checksum = "8ec610d8f49840a5b376c69663b6369e71f4b34484b9b2eb29fb918d92516cb9"
 dependencies = [
  "bare-metal 0.2.5",
  "bitfield",
- "embedded-hal 0.2.7",
+ "embedded-hal",
  "volatile-register",
 ]
 
@@ -185,7 +183,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "4895cd4e54e5536ef370d7f1eec787aad8275dd8ad15815aebfa71dd847b4ebf"
 dependencies = [
  "display-interface",
- "embedded-hal 0.2.7",
+ "embedded-hal",
 ]
 
 [[package]]
@@ -196,7 +194,7 @@ checksum = "489378ad054862146fbd1f09f51d585ccbe4bd1e2feadcda2a13ac33f840e1a5"
 dependencies = [
  "byte-slice-cast",
  "display-interface",
- "embedded-hal 0.2.7",
+ "embedded-hal",
 ]
 
 [[package]]
@@ -240,12 +238,6 @@ dependencies = [
  "nb 0.1.3",
  "void",
 ]
-
-[[package]]
-name = "embedded-hal"
-version = "1.0.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "361a90feb7004eca4019fb28352a9465666b24f840f5c3cddf0ff13920590b89"
 
 [[package]]
 name = "embedded-test"
@@ -297,11 +289,12 @@ dependencies = [
  "cortex-m-rt",
  "cortex-m-semihosting",
  "embedded-graphics",
- "embedded-hal 1.0.0",
+ "embedded-hal",
  "embedded-test",
  "heapless 0.8.0",
  "nb 1.1.0",
  "panic-halt",
+ "panic-reset",
  "shared-bus",
  "ssd1306",
  "stm32f1xx-hal",
@@ -426,6 +419,15 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "a513e167849a384b7f9b746e517604398518590a9142f4846a32e3c2a4de7b11"
 
 [[package]]
+name = "panic-reset"
+version = "0.1.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "6cf1ff2a5b1a478dd94572aa43476b6630e72071cbd016985003ad3903a3a4f5"
+dependencies = [
+ "cortex-m",
+]
+
+[[package]]
 name = "proc-macro2"
 version = "1.0.93"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -537,7 +539,7 @@ version = "0.3.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "c6b8d3f0e34309c22ca4a9a27d24fa493e31573485f3493802b75b9d706756a6"
 dependencies = [
- "embedded-hal 0.2.7",
+ "embedded-hal",
  "nb 1.1.0",
 ]
 
@@ -560,7 +562,7 @@ dependencies = [
  "display-interface-i2c",
  "display-interface-spi",
  "embedded-graphics-core",
- "embedded-hal 0.2.7",
+ "embedded-hal",
 ]
 
 [[package]]
@@ -603,7 +605,7 @@ dependencies = [
  "cortex-m",
  "cortex-m-rt",
  "embedded-dma",
- "embedded-hal 0.2.7",
+ "embedded-hal",
  "fugit",
  "fugit-timer",
  "nb 1.1.0",
