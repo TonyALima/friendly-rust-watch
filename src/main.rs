@@ -5,7 +5,7 @@
 use aht10;
 use cortex_m_rt::entry;
 use embedded_graphics::{
-    mono_font::{ascii::FONT_6X10, MonoTextStyleBuilder},
+    mono_font::{ascii::FONT_10X20, MonoTextStyleBuilder},
     pixelcolor::BinaryColor,
     prelude::*,
     text::{Baseline, Text},
@@ -79,14 +79,14 @@ fn main() -> ! {
     let bus = BusManagerSimple::new(i2c_dev);
 
     let interface = I2CDisplayInterface::new(bus.acquire_i2c());
-    let mut display = Ssd1306::new(interface, DisplaySize128x64, DisplayRotation::Rotate0)
+    let mut display = Ssd1306::new(interface, DisplaySize128x64, DisplayRotation::Rotate90)
         .into_buffered_graphics_mode();
     display.init().unwrap();
 
     display.clear(BinaryColor::Off).unwrap();
 
     let text_style = MonoTextStyleBuilder::new()
-        .font(&FONT_6X10)
+        .font(&FONT_10X20)
         .text_color(BinaryColor::On)
         .build();
 
@@ -98,6 +98,8 @@ fn main() -> ! {
     let mut aht10_dev =
         aht10::Aht10::new(aht10::Address::Default, bus.acquire_i2c(), &mut tim2_delay).unwrap();
 
+    let mut temperature_text: String<6> = String::new();
+    let mut humidity_text: String<6> = String::new();
     loop {
         display.clear(BinaryColor::Off).unwrap();
         let (h, t) = aht10_dev.read(&mut tim2_delay).unwrap();
@@ -105,24 +107,31 @@ fn main() -> ! {
         debug!("h: {}", h.raw());
         let t = float_to_string(t.celsius());
         let h = float_to_string(h.rh());
-        let mut temperature_text: String<20> = String::new();
-        temperature_text.push_str("Temperature: ").unwrap();
+        temperature_text.clear();
         temperature_text.push_str(&t).unwrap();
-        temperature_text.push_str("C").unwrap();
-        Text::with_baseline(&temperature_text, Point::zero(), text_style, Baseline::Top)
-            .draw(&mut display)
-            .unwrap();
+        temperature_text.push_str(" C").unwrap();
+        Text::with_baseline(
+            &temperature_text,
+            Point::new(0, 30),
+            text_style,
+            Baseline::Top,
+        )
+        .draw(&mut display)
+        .unwrap();
 
-        let mut humidity_text: String<16> = String::new();
-        humidity_text.push_str("Humidity: ").unwrap();
+        humidity_text.clear();
         humidity_text.push_str(&h).unwrap();
-        humidity_text.push_str("%").unwrap();
-        Text::with_baseline(&humidity_text, Point::new(0, 16), text_style, Baseline::Top)
-            .draw(&mut display)
-            .unwrap();
+        humidity_text.push_str(" %").unwrap();
+        Text::with_baseline(
+            &humidity_text,
+            Point::new(0, 70),
+            text_style,
+            Baseline::Top,
+        )
+        .draw(&mut display)
+        .unwrap();
 
         display.flush().unwrap();
-
         tim2_delay.delay_ms(5_000u16);
     }
 }
