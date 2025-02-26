@@ -166,12 +166,12 @@ fn main() -> ! {
 
         display.clear(BinaryColor::Off).unwrap();
         match count {
-            0..2 => draw_h_t((&h, &t), &mut display).unwrap(),
-            2 => draw_max(&stat, &mut display).unwrap(),
+            0..2 => draw_h_t((&h, &t), "NOW", &mut display).unwrap(),
+            2 => draw_h_t((&stat.max.h, &stat.max.t), "MAX", &mut display).unwrap(),
             3 => {
-                draw_min(&stat, &mut display).unwrap();
+                draw_h_t((&stat.min.h, &stat.min.t), "MIN", &mut display).unwrap();
                 count = 0;
-            }
+            },
             _ => count = 0,
         }
         
@@ -196,89 +196,9 @@ fn TIM2() {
     tim2.clear_interrupt(Event::Update);
 }
 
-fn draw_min<D>(
-    stat: &Statistic,
-    display: &mut D,
-) -> Result<(), D::Error>
-where
-    D: DrawTarget<Color = BinaryColor>,
-{
-    let t_min = float_to_string(stat.min.t.celsius());
-    let h_min = float_to_string(stat.min.h.rh());
-    let mut temperature_text: String<6> = String::new();
-    let mut humidity_text: String<6> = String::new();
-
-    Text::with_baseline(
-        "MIN",
-        Point::new(20, 5),
-        TEXT_STYLE,
-        Baseline::Top,
-    )
-    .draw(display)?;
-
-    temperature_text.push_str(&t_min).unwrap();
-    temperature_text.push_str(" C").unwrap();
-    Text::with_baseline(
-        &temperature_text,
-        Point::new(0, 35),
-        TEXT_STYLE,
-        Baseline::Top,
-    )
-    .draw(display)?;
-
-    humidity_text.push_str(&h_min).unwrap();
-    humidity_text.push_str(" %").unwrap();
-    Text::with_baseline(&humidity_text,
-        Point::new(0, 75),
-        TEXT_STYLE, Baseline::Top,
-    )
-    .draw(display)?;
-    Ok(())
-}
-
-fn draw_max<D>(
-    stat: &Statistic,
-    display: &mut D,
-) -> Result<(), D::Error>
-where
-    D: DrawTarget<Color = BinaryColor>,
-{
-    let t_max = float_to_string(stat.max.t.celsius());
-    let h_max = float_to_string(stat.max.h.rh());
-    let mut temperature_text: String<6> = String::new();
-    let mut humidity_text: String<6> = String::new();
-
-    Text::with_baseline(
-        "MAX",
-        Point::new(20, 5),
-        TEXT_STYLE,
-        Baseline::Top,
-    )
-    .draw(display)?;
-
-    temperature_text.push_str(&t_max).unwrap();
-    temperature_text.push_str(" C").unwrap();
-    Text::with_baseline(
-        &temperature_text,
-        Point::new(0, 35),
-        TEXT_STYLE,
-        Baseline::Top,
-    )
-    .draw(display)?;
-
-    humidity_text.push_str(&h_max).unwrap();
-    humidity_text.push_str(" %").unwrap();
-    Text::with_baseline(&humidity_text,
-        Point::new(0, 75),
-        TEXT_STYLE, Baseline::Top,
-    )
-    .draw(display)?;
-    Ok(())
-}
-
-
 fn draw_h_t<D>(
     (h, t): (&aht10::Humidity, &aht10::Temperature),
+    text: &str,
     display: &mut D,
 ) -> Result<(), D::Error>
 where
@@ -288,11 +208,19 @@ where
     let mut humidity_text: String<6> = String::new();
     let t = float_to_string(t.celsius());
     let h = float_to_string(h.rh());
+    Text::with_baseline(
+        text,
+        Point::new((64-30)/2, 10),
+        TEXT_STYLE,
+        Baseline::Top,
+    )
+    .draw(display)?;
+
     temperature_text.push_str(&t).unwrap();
     temperature_text.push_str(" C").unwrap();
     Text::with_baseline(
         &temperature_text,
-        Point::new(0, 30),
+        Point::new(0, 47),
         TEXT_STYLE,
         Baseline::Top,
     )
@@ -301,7 +229,7 @@ where
     humidity_text.push_str(&h).unwrap();
     humidity_text.push_str(" %").unwrap();
     Text::with_baseline(&humidity_text,
-        Point::new(0, 70),
+        Point::new(0, 84),
         TEXT_STYLE, Baseline::Top,
     )
     .draw(display)?;
