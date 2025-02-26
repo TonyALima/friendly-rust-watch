@@ -96,13 +96,13 @@ fn main() -> ! {
     let mut tim2_delay = tim2.delay();
 
     let mut aht10_dev =
-        aht10::Aht10::new(aht10::Address::Default, bus.acquire_i2c(), &mut tim2_delay).unwrap();
+        aht10::Aht10::new(aht10::Address::Default, bus.acquire_i2c(), clocks.sysclk().raw()).unwrap();
 
     let mut temperature_text: String<6> = String::new();
     let mut humidity_text: String<6> = String::new();
     loop {
         display.clear(BinaryColor::Off).unwrap();
-        let (h, t) = aht10_dev.read(&mut tim2_delay).unwrap();
+        let (h, t) = aht10_dev.read().unwrap();
         debug!("t: {}", t.raw());
         debug!("h: {}", h.raw());
         let t = float_to_string(t.celsius());

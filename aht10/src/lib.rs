@@ -1,6 +1,6 @@
 #![no_std]
-use embedded_hal::blocking::{delay, i2c};
-
+use embedded_hal::blocking::i2c;
+use cortex_m::asm;
 use bitflags::bitflags;
 
 bitflags! {
@@ -64,24 +64,25 @@ where
 {
     addr: Address,
     i2c_dev: I,
+    sys_clock: u32,
 }
 
 impl<I, E> Aht10<I>
 where
     I: i2c::Write<Error = E> + i2c::Read<Error = E>,
 {
-    pub fn new(addr: Address, i2c_dev: I, delay: &mut impl delay::DelayMs<u16>) -> Result<Self, E> {
-        let mut dev = Aht10 { addr, i2c_dev };
+    pub fn new(addr: Address, i2c_dev: I, sys_clock: u32) -> Result<Self, E> {
+        let mut dev = Aht10 { addr, i2c_dev, sys_clock};
         // 20 ms to power up
-        delay.delay_ms(20);
+        asm::delay(dev.sys_clock * (20/1000));
 
         dev.i2c_dev
             .write(dev.addr as u8, &[Command::SoftReset as u8])?;
 
-        delay.delay_ms(20);
+        asm::delay(dev.sys_clock * (20/1000));
 
         while dev.status()?.contains(StatusFlags::BUSY) {
-            delay.delay_ms(10);
+            asm::delay(dev.sys_clock * (10/1000));
         }
 
         let cmds = [
@@ -92,7 +93,7 @@ where
         dev.i2c_dev.write(dev.addr as u8, &cmds)?;
 
         while dev.status()?.contains(StatusFlags::BUSY) {
-            delay.delay_ms(10);
+            asm::delay(dev.sys_clock * (10/1000));
         }
 
         Ok(dev)
@@ -107,7 +108,6 @@ where
 
     pub fn read(
         &mut self,
-        delay: &mut impl delay::DelayMs<u16>,
     ) -> Result<(Humidity, Temperature), E> {
         let cmds = [
             Command::TriggerMeasurement as u8,
@@ -118,7 +118,7 @@ where
         self.i2c_dev.write(self.addr as u8, &cmds)?;
 
         while self.status()?.contains(StatusFlags::BUSY) {
-            delay.delay_ms(10);
+            asm::delay(self.sys_clock * (10/1000));
         }
 
         let mut data: [u8; 6] = [0; 6];

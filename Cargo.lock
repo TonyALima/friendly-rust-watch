@@ -7,6 +7,7 @@ name = "aht10"
 version = "0.1.0"
 dependencies = [
  "bitflags 2.8.0",
+ "cortex-m",
  "embedded-hal",
 ]
 
