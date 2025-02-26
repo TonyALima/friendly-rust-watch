@@ -29,6 +29,7 @@ pub enum Address {
 }
 
 /// Humidity reading from AHT10.
+#[derive(Debug, Copy, Clone, PartialEq, PartialOrd, Eq, Ord)]
 pub struct Humidity {
     h: u32,
 }
@@ -47,6 +48,7 @@ impl Humidity {
 }
 
 /// Temperature reading from AHT10.
+#[derive(Debug, Copy, Clone, PartialEq, PartialOrd, Eq, Ord)]
 pub struct Temperature {
     t: u32,
 }
