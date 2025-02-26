@@ -3,7 +3,7 @@
 
 use core::cmp::{max, min};
 
-use aht10;
+use aht10::*;
 use cortex_m::asm;
 use cortex_m_rt::entry;
 use embedded_graphics::{
@@ -49,13 +49,13 @@ static mut TIMER2: Option<Counter<pac::TIM2, 1_000>> = None;
 static mut RTC: Option<Rtc> = None;
 
 struct Maximum {
-    t: u32,
-    h: u32,
+    t: Temperature,
+    h: Humidity,
 }
 
 struct Minimum {
-    t: u32,
-    h: u32,
+    t: Temperature,
+    h: Humidity,
 }
 
 struct Statistic {
@@ -135,7 +135,7 @@ fn main() -> ! {
         NVIC::unmask(Interrupt::RTC);
     }
 
-    let mut aht10_dev = aht10::Aht10::new(
+    let mut aht10_dev = Aht10::new(
         aht10::Address::Default,
         bus.acquire_i2c(),
         clocks.sysclk().raw(),
@@ -144,12 +144,12 @@ fn main() -> ! {
 
     let mut stat  = Statistic {
         max: Maximum {
-            t: 0,
-            h: 0,
+            t: Temperature::from_raw(0),
+            h: Humidity::from_raw(0),
         },
         min: Minimum {
-            t: 0xFFFF_FFFF,
-            h: 0xFFFF_FFFF,
+            t: Temperature::from_raw(0xFFFF_FFFF),
+            h: Humidity::from_raw(0xFFFF_FFFF),
         },
     };
 
@@ -157,10 +157,10 @@ fn main() -> ! {
 
     loop {
         let (h, t) = aht10_dev.read().unwrap();
-        stat.max.t = max(stat.max.t, t.raw());
-        stat.max.h = max(stat.max.h, h.raw());
-        stat.min.t = min(stat.min.t, t.raw());
-        stat.min.h = min(stat.min.h, h.raw());
+        stat.max.t = max(stat.max.t, t);
+        stat.max.h = max(stat.max.h, h);
+        stat.min.t = min(stat.min.t, t);
+        stat.min.h = min(stat.min.h, h);
         debug!("t: {}", t.raw());
         debug!("h: {}", h.raw());
 
@@ -203,10 +203,8 @@ fn draw_min<D>(
 where
     D: DrawTarget<Color = BinaryColor>,
 {
-    let t_min = aht10::Temperature::from_raw(stat.min.t);
-    let h_min = aht10::Humidity::from_raw(stat.min.h);
-    let t_min = float_to_string(t_min.celsius());
-    let h_min = float_to_string(h_min.rh());
+    let t_min = float_to_string(stat.min.t.celsius());
+    let h_min = float_to_string(stat.min.h.rh());
     let mut temperature_text: String<6> = String::new();
     let mut humidity_text: String<6> = String::new();
 
@@ -245,10 +243,8 @@ fn draw_max<D>(
 where
     D: DrawTarget<Color = BinaryColor>,
 {
-    let t_max = aht10::Temperature::from_raw(stat.max.t);
-    let h_max = aht10::Humidity::from_raw(stat.max.h);
-    let t_max = float_to_string(t_max.celsius());
-    let h_max = float_to_string(h_max.rh());
+    let t_max = float_to_string(stat.max.t.celsius());
+    let h_max = float_to_string(stat.max.h.rh());
     let mut temperature_text: String<6> = String::new();
     let mut humidity_text: String<6> = String::new();
 
