@@ -41,6 +41,9 @@ impl Humidity {
     pub fn raw(&self) -> u32 {
         self.h
     }
+    pub fn from_raw(h: u32) -> Self {
+        Humidity { h }
+    }
 }
 
 /// Temperature reading from AHT10.
@@ -55,6 +58,9 @@ impl Temperature {
     /// Raw temperature reading.
     pub fn raw(&self) -> u32 {
         self.t
+    }
+    pub fn from_raw(t: u32) -> Self {
+        Temperature { t }
     }
 }
 
