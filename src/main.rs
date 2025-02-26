@@ -86,6 +86,7 @@ fn main() -> ! {
         .freeze(&mut flash.acr);
 
     let mut rtc = Rtc::new(dp.RTC, &mut backup_domain);
+    rtc.set_time(0);
     rtc.set_alarm(86400);
     rtc.listen_alarm();
     unsafe {
