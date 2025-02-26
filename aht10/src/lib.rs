@@ -1,7 +1,7 @@
 #![no_std]
-use embedded_hal::blocking::i2c;
-use cortex_m::asm;
 use bitflags::bitflags;
+use cortex_m::asm;
+use embedded_hal::blocking::i2c;
 
 bitflags! {
     struct StatusFlags: u8 {
@@ -72,17 +72,21 @@ where
     I: i2c::Write<Error = E> + i2c::Read<Error = E>,
 {
     pub fn new(addr: Address, i2c_dev: I, sys_clock: u32) -> Result<Self, E> {
-        let mut dev = Aht10 { addr, i2c_dev, sys_clock};
+        let mut dev = Aht10 {
+            addr,
+            i2c_dev,
+            sys_clock,
+        };
         // 20 ms to power up
-        asm::delay(dev.sys_clock * (20/1000));
+        asm::delay(dev.sys_clock * (20 / 1000));
 
         dev.i2c_dev
             .write(dev.addr as u8, &[Command::SoftReset as u8])?;
 
-        asm::delay(dev.sys_clock * (20/1000));
+        asm::delay(dev.sys_clock * (20 / 1000));
 
         while dev.status()?.contains(StatusFlags::BUSY) {
-            asm::delay(dev.sys_clock * (10/1000));
+            asm::delay(dev.sys_clock * (10 / 1000));
         }
 
         let cmds = [
@@ -93,7 +97,7 @@ where
         dev.i2c_dev.write(dev.addr as u8, &cmds)?;
 
         while dev.status()?.contains(StatusFlags::BUSY) {
-            asm::delay(dev.sys_clock * (10/1000));
+            asm::delay(dev.sys_clock * (10 / 1000));
         }
 
         Ok(dev)
@@ -106,9 +110,7 @@ where
         Ok(StatusFlags::from_bits_truncate(data[0]))
     }
 
-    pub fn read(
-        &mut self,
-    ) -> Result<(Humidity, Temperature), E> {
+    pub fn read(&mut self) -> Result<(Humidity, Temperature), E> {
         let cmds = [
             Command::TriggerMeasurement as u8,
             Command::HumidityAndTemperature as u8,
@@ -118,7 +120,7 @@ where
         self.i2c_dev.write(self.addr as u8, &cmds)?;
 
         while self.status()?.contains(StatusFlags::BUSY) {
-            asm::delay(self.sys_clock * (10/1000));
+            asm::delay(self.sys_clock * (10 / 1000));
         }
 
         let mut data: [u8; 6] = [0; 6];

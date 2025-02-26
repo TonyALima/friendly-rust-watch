@@ -36,7 +36,8 @@ macro_rules! debug {
     }
 }
 
-const TEXT_STYLE: embedded_graphics::mono_font::MonoTextStyle<'_, BinaryColor> = MonoTextStyleBuilder::new()
+const TEXT_STYLE: embedded_graphics::mono_font::MonoTextStyle<'_, BinaryColor> =
+    MonoTextStyleBuilder::new()
         .font(&FONT_10X20)
         .text_color(BinaryColor::On)
         .build();
@@ -95,8 +96,12 @@ fn main() -> ! {
     let tim2: FTimer<pac::TIM2, 1_000> = FTimer::new(dp.TIM2, &clocks);
     let mut tim2_delay = tim2.delay();
 
-    let mut aht10_dev =
-        aht10::Aht10::new(aht10::Address::Default, bus.acquire_i2c(), clocks.sysclk().raw()).unwrap();
+    let mut aht10_dev = aht10::Aht10::new(
+        aht10::Address::Default,
+        bus.acquire_i2c(),
+        clocks.sysclk().raw(),
+    )
+    .unwrap();
 
     loop {
         display.clear(BinaryColor::Off).unwrap();
@@ -110,7 +115,10 @@ fn main() -> ! {
     }
 }
 
-fn draw_h_t<D>((h, t): (aht10::Humidity, aht10::Temperature), display: &mut D) -> Result<(), D::Error>
+fn draw_h_t<D>(
+    (h, t): (aht10::Humidity, aht10::Temperature),
+    display: &mut D,
+) -> Result<(), D::Error>
 where
     D: DrawTarget<Color = BinaryColor>,
 {
@@ -132,11 +140,9 @@ where
     humidity_text.clear();
     humidity_text.push_str(&h).unwrap();
     humidity_text.push_str(" %").unwrap();
-    Text::with_baseline(
-        &humidity_text,
+    Text::with_baseline(&humidity_text,
         Point::new(0, 70),
-        TEXT_STYLE,
-        Baseline::Top,
+        TEXT_STYLE, Baseline::Top,
     )
     .draw(display)?;
     Ok(())
