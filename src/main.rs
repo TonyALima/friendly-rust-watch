@@ -36,6 +36,11 @@ macro_rules! debug {
     }
 }
 
+const TEXT_STYLE: embedded_graphics::mono_font::MonoTextStyle<'_, BinaryColor> = MonoTextStyleBuilder::new()
+        .font(&FONT_10X20)
+        .text_color(BinaryColor::On)
+        .build();
+
 #[entry]
 fn main() -> ! {
     // Get access to the core peripherals from the cortex-m crate
@@ -85,11 +90,6 @@ fn main() -> ! {
 
     display.clear(BinaryColor::Off).unwrap();
 
-    let text_style = MonoTextStyleBuilder::new()
-        .font(&FONT_10X20)
-        .text_color(BinaryColor::On)
-        .build();
-
     display.flush().unwrap();
 
     let tim2: FTimer<pac::TIM2, 1_000> = FTimer::new(dp.TIM2, &clocks);
@@ -98,42 +98,48 @@ fn main() -> ! {
     let mut aht10_dev =
         aht10::Aht10::new(aht10::Address::Default, bus.acquire_i2c(), clocks.sysclk().raw()).unwrap();
 
-    let mut temperature_text: String<6> = String::new();
-    let mut humidity_text: String<6> = String::new();
     loop {
         display.clear(BinaryColor::Off).unwrap();
         let (h, t) = aht10_dev.read().unwrap();
         debug!("t: {}", t.raw());
         debug!("h: {}", h.raw());
-        let t = float_to_string(t.celsius());
-        let h = float_to_string(h.rh());
-        temperature_text.clear();
-        temperature_text.push_str(&t).unwrap();
-        temperature_text.push_str(" C").unwrap();
-        Text::with_baseline(
-            &temperature_text,
-            Point::new(0, 30),
-            text_style,
-            Baseline::Top,
-        )
-        .draw(&mut display)
-        .unwrap();
-
-        humidity_text.clear();
-        humidity_text.push_str(&h).unwrap();
-        humidity_text.push_str(" %").unwrap();
-        Text::with_baseline(
-            &humidity_text,
-            Point::new(0, 70),
-            text_style,
-            Baseline::Top,
-        )
-        .draw(&mut display)
-        .unwrap();
+        draw_h_t((h, t), &mut display).unwrap();
 
         display.flush().unwrap();
         tim2_delay.delay_ms(5_000u16);
     }
+}
+
+fn draw_h_t<D>((h, t): (aht10::Humidity, aht10::Temperature), display: &mut D) -> Result<(), D::Error>
+where
+    D: DrawTarget<Color = BinaryColor>,
+{
+    let mut temperature_text: String<6> = String::new();
+    let mut humidity_text: String<6> = String::new();
+    let t = float_to_string(t.celsius());
+    let h = float_to_string(h.rh());
+    temperature_text.clear();
+    temperature_text.push_str(&t).unwrap();
+    temperature_text.push_str(" C").unwrap();
+    Text::with_baseline(
+        &temperature_text,
+        Point::new(0, 30),
+        TEXT_STYLE,
+        Baseline::Top,
+    )
+    .draw(display)?;
+
+    humidity_text.clear();
+    humidity_text.push_str(&h).unwrap();
+    humidity_text.push_str(" %").unwrap();
+    Text::with_baseline(
+        &humidity_text,
+        Point::new(0, 70),
+        TEXT_STYLE,
+        Baseline::Top,
+    )
+    .draw(display)?;
+    Ok(())
 }
 
 fn float_to_string(f: f32) -> String<4> {
