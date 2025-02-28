@@ -48,19 +48,9 @@ const TEXT_STYLE: embedded_graphics::mono_font::MonoTextStyle<'_, BinaryColor> =
 static mut TIMER2: Option<Counter<pac::TIM2, 1_000>> = None;
 static mut RTC: Option<Rtc> = None;
 
-struct Maximum {
-    t: Temperature,
-    h: Humidity,
-}
-
-struct Minimum {
-    t: Temperature,
-    h: Humidity,
-}
-
 struct Statistic {
-    max: Maximum,
-    min: Minimum,
+    max: Weather,
+    min: Weather,
 }
 
 #[entry]
@@ -144,33 +134,33 @@ fn main() -> ! {
     .unwrap();
 
     let mut stat  = Statistic {
-        max: Maximum {
-            t: Temperature::from_raw(0),
-            h: Humidity::from_raw(0),
+        max: Weather {
+            humidity: Humidity::from_raw(0),
+            temperature: Temperature::from_raw(0),
         },
-        min: Minimum {
-            t: Temperature::from_raw(0xFFFF_FFFF),
-            h: Humidity::from_raw(0xFFFF_FFFF),
+        min: Weather {
+            humidity: Humidity::from_raw(0xFFFF_FFFF),
+            temperature: Temperature::from_raw(0xFFFF_FFFF),
         },
     };
 
     let mut count: u32 = 0;
 
     loop {
-        let (h, t) = aht10_dev.read().unwrap();
-        stat.max.t = max(stat.max.t, t);
-        stat.max.h = max(stat.max.h, h);
-        stat.min.t = min(stat.min.t, t);
-        stat.min.h = min(stat.min.h, h);
-        debug!("t: {}", t.raw());
-        debug!("h: {}", h.raw());
+        let weather_now = aht10_dev.read().unwrap();
+        stat.max.temperature = max(stat.max.temperature, weather_now.temperature);
+        stat.max.humidity = max(stat.max.humidity, weather_now.humidity);
+        stat.min.temperature = min(stat.min.temperature, weather_now.temperature);
+        stat.min.humidity = min(stat.min.humidity, weather_now.humidity);
+        debug!("t: {}", weather_now.temperature.raw());
+        debug!("h: {}", weather_now.temperature.raw());
 
         display.clear(BinaryColor::Off).unwrap();
         match count {
-            0..2 => draw_h_t((&h, &t), "NOW", &mut display).unwrap(),
-            2 => draw_h_t((&stat.max.h, &stat.max.t), "MAX", &mut display).unwrap(),
+            0..2 => draw_h_t(&weather_now, "NOW", &mut display).unwrap(),
+            2 => draw_h_t(&stat.max, "MAX", &mut display).unwrap(),
             3 => {
-                draw_h_t((&stat.min.h, &stat.min.t), "MIN", &mut display).unwrap();
+                draw_h_t(&stat.min, "MIN", &mut display).unwrap();
                 count = 0;
             },
             _ => count = 0,
@@ -198,7 +188,7 @@ fn TIM2() {
 }
 
 fn draw_h_t<D>(
-    (h, t): (&aht10::Humidity, &aht10::Temperature),
+    w: &Weather,
     text: &str,
     display: &mut D,
 ) -> Result<(), D::Error>
@@ -207,8 +197,8 @@ where
 {
     let mut temperature_text: String<6> = String::new();
     let mut humidity_text: String<6> = String::new();
-    let t = float_to_string(t.celsius());
-    let h = float_to_string(h.rh());
+    let t = float_to_string(w.temperature.celsius());
+    let h = float_to_string(w.humidity.rh());
     Text::with_baseline(
         text,
         Point::new((64-30)/2, 10),

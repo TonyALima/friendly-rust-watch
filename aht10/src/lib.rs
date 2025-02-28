@@ -66,6 +66,11 @@ impl Temperature {
     }
 }
 
+pub struct Weather {
+    pub humidity: Humidity,
+    pub temperature: Temperature,
+}
+
 pub struct Aht10<I>
 where
     I: i2c::Write + i2c::Read,
@@ -118,7 +123,7 @@ where
         Ok(StatusFlags::from_bits_truncate(data[0]))
     }
 
-    pub fn read(&mut self) -> Result<(Humidity, Temperature), E> {
+    pub fn read(&mut self) -> Result<Weather, E> {
         let cmds = [
             Command::TriggerMeasurement as u8,
             Command::HumidityAndTemperature as u8,
@@ -138,6 +143,10 @@ where
         let h = ((data[1] as u32) << 12) | ((data[2] as u32) << 4) | ((data[3] as u32) >> 4);
         let t = (((data[3] as u32) & 0x0F) << 16) | ((data[4] as u32) << 8) | (data[5] as u32);
 
-        Ok((Humidity { h }, Temperature { t }))
+        let w = Weather {
+            humidity: Humidity { h },
+            temperature: Temperature { t },
+        };
+        Ok(w)
     }
 }
